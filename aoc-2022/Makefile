@@ -1,6 +1,6 @@
 DAY=1
 newday:
-	mkdir $(DAY)
+	mkdir challenges/$(DAY)
 	cp template.py challenges/$(DAY)/$(DAY).py
 	touch challenges/$(DAY)/input.txt
 	code .
