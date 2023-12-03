@@ -46,12 +46,30 @@ def recursive_replace(in_string: str) -> str:
         return recursive_replace(in_string)
     return in_string
 
+def recursive_replace2(in_string: str) -> str:
+    replacement_dict = {
+        "one": "o1e",
+        "two": "t2",
+        "three": "t3e",
+        "four": "4",
+        "five": "5e",
+        "six": "6",
+        "seven": "7n",
+        "eight": "e8t",
+        "nine": "n9e",
+    }
+
+    for k, v in replacement_dict.items():
+        if k in in_string:
+            in_string = in_string.replace(k, v)
+            return recursive_replace2(in_string)
+    return in_string
 
 def challenge2(data: list) -> int:
     line_digits = []
 
     for line in data:
-        digitized_line = recursive_replace(line)
+        digitized_line = recursive_replace2(line)
 
         all_digits = [char for char in digitized_line if char.isdigit()]
 
