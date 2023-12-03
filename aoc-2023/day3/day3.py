@@ -3,13 +3,13 @@ import regex as re
 import string
 
 
-
 def read_data(path_: str) -> np.array:
 
     with open(path_, "r") as f:
         lines = [line.strip() for line in f.readlines()]
 
     return lines
+
 
 def c1(data: list) -> int:
 
@@ -20,7 +20,10 @@ def c1(data: list) -> int:
     pattern = r"\d{1,3}"
 
     for i, row in enumerate(data):
-        matches = [(match.group(), match.start(), match.end() - 1) for match in re.finditer(pattern, row)]
+        matches = [
+            (match.group(), match.start(), match.end() - 1)
+            for match in re.finditer(pattern, row)
+        ]
         for number_info in matches:
             surrounding = []
             print(number_info)
@@ -28,7 +31,7 @@ def c1(data: list) -> int:
             ### check if can go up
             if i - 1 >= 0:
                 for num in range(number_info[1], number_info[2] + 1):
-                    surrounding.append((i -1, num))
+                    surrounding.append((i - 1, num))
 
                 # up and left
                 if number_info[1] - 1 >= 0:
@@ -70,6 +73,7 @@ def c1(data: list) -> int:
     print(total_sum)
     return total_sum
 
+
 def c2(data: list) -> int:
 
     x_max = len(data[0])
@@ -80,7 +84,10 @@ def c2(data: list) -> int:
     pattern = r"\d{1,3}"
 
     for i, row in enumerate(data):
-        matches = [(match.group(), match.start(), match.end() - 1) for match in re.finditer(pattern, row)]
+        matches = [
+            (match.group(), match.start(), match.end() - 1)
+            for match in re.finditer(pattern, row)
+        ]
         for number_info in matches:
             surrounding = []
             # print(number_info)
@@ -88,7 +95,7 @@ def c2(data: list) -> int:
             ### check if can go up
             if i - 1 >= 0:
                 for num in range(number_info[1], number_info[2] + 1):
-                    surrounding.append((i -1, num))
+                    surrounding.append((i - 1, num))
 
                 # up and left
                 if number_info[1] - 1 >= 0:
@@ -129,7 +136,6 @@ def c2(data: list) -> int:
                         numbers_with_stars[key_] = []
 
                     numbers_with_stars[key_].append(int(number_info[0]))
-
 
     # Reduce the dictionary to a list of elements that is the product elements of two or more
     two_num_stars = []
