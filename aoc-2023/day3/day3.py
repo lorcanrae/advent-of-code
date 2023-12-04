@@ -1,9 +1,8 @@
-import numpy as np
 import regex as re
 import string
 
 
-def read_data(path_: str) -> np.array:
+def read_data(path_: str):
 
     with open(path_, "r") as f:
         lines = [line.strip() for line in f.readlines()]
@@ -128,7 +127,7 @@ def c2(data: list) -> int:
 
             ### Checking to see if there is a "*" in surrounding.
             ### If "*" found in surrounding, append to dictionary with key of
-            ### coords with "*"
+            ### coords with "*" and value of the number that is at the center
             for surround in surrounding:
                 if data[surround[0]][surround[1]] == "*":
                     key_ = f"{surround[0]}_{surround[1]}"
@@ -137,13 +136,11 @@ def c2(data: list) -> int:
 
                     numbers_with_stars[key_].append(int(number_info[0]))
 
-    # Reduce the dictionary to a list of elements that is the product elements of two or more
-    two_num_stars = []
+    # Add the product of coords with two numbers adjacent to them to get the solution
+    solution = 0
     for v in numbers_with_stars.values():
         if len(v) == 2:
-            two_num_stars.append(v[0] * v[1])
-
-    solution = sum(two_num_stars)
+            solution += v[0] * v[1]
 
     print(solution)
     return solution
