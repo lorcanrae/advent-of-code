@@ -11,6 +11,7 @@ def read_data(path_: str) -> list:
 
     return out_data
 
+
 def c1(data):
     score = 0
     for win_nums, game_nums in data:
@@ -19,11 +20,15 @@ def c1(data):
             if num in game_nums:
                 game_win_count += 1
         match game_win_count:
-            case 0: score += 0
-            case 1: score += 1
-            case _: score += 2 ** (game_win_count - 1)
+            case 0:
+                score += 0
+            case 1:
+                score += 1
+            case _:
+                score += 2 ** (game_win_count - 1)
     print(score)
     return score
+
 
 def c2(data):
     runs_per_game = [1] * len(data)
@@ -38,10 +43,9 @@ def c2(data):
                 if winning_number in game_numbers:
                     game_win_count += 1
             if game_win_count > 0:
-                for i in range(game_number+1, game_number + game_win_count+1):
+                for i in range(game_number + 1, game_number + game_win_count + 1):
                     if i < len(data):
                         runs_per_game[i] += 1
-
 
     total_runs = sum(runs_per_game)
     print(runs_per_game)

@@ -46,6 +46,7 @@ def recursive_replace(in_string: str) -> str:
         return recursive_replace(in_string)
     return in_string
 
+
 def recursive_replace2(in_string: str) -> str:
     replacement_dict = {
         "one": "o1e",
@@ -64,6 +65,7 @@ def recursive_replace2(in_string: str) -> str:
             in_string = in_string.replace(k, v)
             return recursive_replace2(in_string)
     return in_string
+
 
 def challenge2(data: list) -> int:
     line_digits = []
