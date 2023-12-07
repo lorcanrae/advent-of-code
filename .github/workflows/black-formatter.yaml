@@ -15,7 +15,7 @@ jobs:
     steps:
     # Check out most recent branch
     - name: Check out Branch
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
 
     # Setup python environment
     - name: Set up Python 3.10
