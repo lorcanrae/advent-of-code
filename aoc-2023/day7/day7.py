@@ -1,12 +1,14 @@
 from collections import Counter
 from pprint import pprint
 
+
 def parse_data(path: str):
 
     with open(path, "r") as f:
         lines = [line.strip().split() for line in f.readlines()]
 
     return lines
+
 
 def c1(data: list) -> int:
     out = []
@@ -37,6 +39,7 @@ def c1(data: list) -> int:
 
     print(rank)
     return rank
+
 
 def c2(data):
     out = []
