@@ -21,6 +21,7 @@ def read_data(path_: str) -> list:
 
     return out_data
 
+
 def seed_location(data, seed):
     # Just a helper function to give the location for a given input seed
     for mapping in data[1:]:
@@ -31,7 +32,8 @@ def seed_location(data, seed):
                 break
     return seed
 
-def c1(data:list) -> int:
+
+def c1(data: list) -> int:
     # Just a very large number
     closest_loc = 1e20
 
@@ -55,7 +57,7 @@ def c2(data: list) -> int:
         start_range = data[0][i]
         end_range = data[0][i] + data[0][i + 1]
 
-        step = int(data[0][i + 1] ** (1/2))
+        step = int(data[0][i + 1] ** (1 / 2))
 
         for seed in range(start_range, end_range, step):
             seed_loc = seed_location(data, seed)
@@ -69,7 +71,7 @@ def c2(data: list) -> int:
     # Define the range to search in
     start_range = data[0][approx_loc[1]]
     end_range = data[0][approx_loc[1]] + data[0][approx_loc[1] + 1]
-    step = int(data[0][approx_loc[1] + 1] ** (1/2))
+    step = int(data[0][approx_loc[1] + 1] ** (1 / 2))
 
     # Refine the search range even more
     start_range = max(start_range, approx_loc[2] - step - 1)
@@ -105,9 +107,10 @@ def brute_force(data):
                 closest_loc = (seed_loc, i, seed)
 
         processed += data[0][i]
-        print(f"Processed {processed} out of {num_seeds} - {processed / num_seeds * 100:0.2f}%")
+        print(
+            f"Processed {processed} out of {num_seeds} - {processed / num_seeds * 100:0.2f}%"
+        )
         print(f"Processed {i // 2 + 1} of {len(data[0]) // 2}.")
-
 
     print(closest_loc)
     return closest_loc
@@ -121,7 +124,7 @@ if __name__ == "__main__":
     c1(data)
     print(f"Wall time: {time.time() - st:0.3f} seconds")
 
-    print("\nChallenge 2") # takes ~1 second
+    print("\nChallenge 2")  # takes ~1 second
     st = time.time()
     c2(data)
     print(f"Wall time: {time.time() - st:0.3f} seconds")
