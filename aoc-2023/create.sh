@@ -1,7 +1,5 @@
 #!/bin/bash
 
-mkdir -p "day$1"
-
 directoryName="day$1"
 pyFile="day$1.py"
 fileName1="input.txt"
