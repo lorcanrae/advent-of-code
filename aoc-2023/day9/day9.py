@@ -17,10 +17,9 @@ def c1(data: list) -> int:
         history.append(line)
 
         ## Reduce
-        while len(set(history[-1])) != 1 or list(set(history[-1]))[0] != 0:
+        while set(history[-1]) != {0}:
             next_row = [j - i for i, j in zip(history[-1], history[-1][1:])]
             history.append(next_row)
-            # print(next_row)
 
         ## Back up
         end_val = 0
@@ -29,12 +28,50 @@ def c1(data: list) -> int:
             end_val = step[-1] + end_val
         next_vals.append(end_val)
 
-    print(sum(next_vals))
-    return sum(next_vals)
+    next = sum(next_vals)
+
+    print(next)
+    return next
+
+
+def c2(data: list) -> int:
+    next_vals = []
+    prev_vals = []
+
+    for line in data:
+        history = []
+        history.append(line)
+
+        ## Reduce
+        while set(history[-1]) != {0}:
+            next_row = [j - i for i, j in zip(history[-1], history[-1][1:])]
+            history.append(next_row)
+            # print(next_row)
+
+        ## Back up
+        end_val = 0
+        start_val = 0
+
+        for step in history[::-1]:
+            end_val = step[-1] + end_val
+            start_val = step[0] - start_val
+
+        next_vals.append(end_val)
+        prev_vals.append(start_val)
+
+    prev, next = sum(prev_vals), sum(next_vals)
+
+    print(prev, next)
+    return prev, next
+
 
 if __name__ == "__main__":
     data = parse_data("input.txt")
 
     st = time.time()
     c1(data)
+    print(f"Wall time: {time.time() - st: 0.5f} seconds.")
+
+    st = time.time()
+    c2(data)
     print(f"Wall time: {time.time() - st: 0.5f} seconds.")

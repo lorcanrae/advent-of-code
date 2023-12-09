@@ -12,6 +12,7 @@ def parse_data(path: str) -> list:
     mapping = {}
     pattern = r"[A-Z0-9]{3}"
 
+
     for line in lines[1:]:
         regex_ = re.findall(pattern, line)
         mapping[regex_[0]] = regex_[1:]
@@ -48,8 +49,8 @@ def c2(data):
         steps_per_start.append(steps)
 
     min_cycles = math.lcm(*steps_per_start)
-    print(min_cycles)
 
+    print(min_cycles)
     return min_cycles
 
 
