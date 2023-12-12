@@ -3,6 +3,7 @@ import math
 from pprint import pprint
 import time
 
+
 def parse_data(path: str) -> list:
     with open(path, "r") as f:
         lines = [line.strip() for line in f.readlines() if line.strip() != ""]
@@ -12,12 +13,12 @@ def parse_data(path: str) -> list:
     mapping = {}
     pattern = r"[A-Z0-9]{3}"
 
-
     for line in lines[1:]:
         regex_ = re.findall(pattern, line)
         mapping[regex_[0]] = regex_[1:]
 
     return instructions, mapping
+
 
 def c1(data):
     instructions, mappings = data
