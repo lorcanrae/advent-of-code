@@ -1,8 +1,9 @@
 from pprint import pprint
 import time
 
+
 def parse_data(path: str):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         lines = [[int(c) for c in l.strip().split()] for l in f.readlines()]
 
     return lines

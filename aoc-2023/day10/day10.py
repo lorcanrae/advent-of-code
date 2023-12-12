@@ -1,12 +1,14 @@
 from pprint import pprint
 
+
 def parse_data(path: str):
     with open(path, "r") as f:
         lines = [[c for c in l.strip()] for l in f.readlines()]
 
     return lines
 
-def c1(data:list) -> int:
+
+def c1(data: list) -> int:
 
     # start with finding "S"
     for i in range(len(data)):
@@ -17,7 +19,7 @@ def c1(data:list) -> int:
 
     e = s
     steps = 0
-    d = "s" # Should be the direction that you would enter the next tile from
+    d = "s"  # Should be the direction that you would enter the next tile from
 
     while True:
         if steps > 0 and s == e:
@@ -36,10 +38,10 @@ def c1(data:list) -> int:
             else:
                 s = (s[0] + 1, s[1])
 
-        if t == "F" or t == "S": # Hardcoded for my input
+        if t == "F" or t == "S":  # Hardcoded for my input
             if d == "s":
                 d = "w"
-                s = (s[0] , s[1] + 1)
+                s = (s[0], s[1] + 1)
             else:
                 d = "n"
                 s = (s[0] + 1, s[1])
@@ -73,7 +75,8 @@ def c1(data:list) -> int:
     print(steps // 2)
     return steps // 2
 
-def c2(data:list) -> int:
+
+def c2(data: list) -> int:
 
     # start with finding "S"
     for i in range(len(data)):
@@ -84,7 +87,7 @@ def c2(data:list) -> int:
 
     e = s
     steps = 0
-    d = "s" # Should be the direction that you would enter the next tile from
+    d = "s"  # Should be the direction that you would enter the next tile from
     pipe = set()
 
     while True:
@@ -105,10 +108,10 @@ def c2(data:list) -> int:
             else:
                 s = (s[0] + 1, s[1])
 
-        if t == "F" or t == "S": # Hardcoded for my input
+        if t == "F" or t == "S":  # Hardcoded for my input
             if d == "s":
                 d = "w"
-                s = (s[0] , s[1] + 1)
+                s = (s[0], s[1] + 1)
             else:
                 d = "n"
                 s = (s[0] + 1, s[1])
@@ -165,9 +168,6 @@ def c2(data:list) -> int:
     print(t)
 
 
-
-
-
 if __name__ == "__main__":
 
     data = parse_data("input.txt")
@@ -176,6 +176,5 @@ if __name__ == "__main__":
     # print(data)
 
     c1(data)
-
 
     c2(data)
