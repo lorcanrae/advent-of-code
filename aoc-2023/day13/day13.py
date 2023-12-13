@@ -30,7 +30,7 @@ def has_horizontal(grid: list, old=0) -> int:
         matched = True
 
         for j in range(len(grid)):
-            # Check to see if we've reached the grid, if we have then break
+            # Check to see if we've reached the edge
             if row_up - j < 0 or row_down + j > len(grid) - 1:
                 break
 
@@ -39,11 +39,11 @@ def has_horizontal(grid: list, old=0) -> int:
                 matched = False
 
         # If there is a valid reflection and it's not the same as a chosed row index input,
-        # return row index. Other wise continue to look for a valid reflection
+        # return row index. Other wise continue to look for a valid reflection.
         if matched and i != old:
             return i
 
-    # Return 0 if not valid reflection found
+    # Return 0 if no valid reflection found
     return 0
 
 
@@ -77,7 +77,7 @@ def c2(data: list) -> int:
     # Iterate over all grids
     for k, grid in enumerate(data):
 
-        # Set index's for original horizontal and vertical reflections
+        # Set index's for original horizontal and vertical reflection axes
         old_h = has_horizontal(grid)
         old_v = has_vertical(grid)
 
