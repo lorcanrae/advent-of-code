@@ -20,34 +20,29 @@ def parse_data(path: str) -> list:
     return clean_grids
 
 
-def has_horizontal(grid:list) -> int:
-
+def has_horizontal(grid:list, old=0) -> int:
     for i in range(1, len(grid)):
         # select rows mirror is between
         row_up, row_down = i - 1, i
+        matched = True
 
         for j in range(len(grid)):
             if row_up - j < 0 or row_down + j > len(grid) - 1:
-                return i
-            if grid[row_up - j] != grid[row_down + j]:
                 break
+
+            if grid[row_up - j] != grid[row_down + j]:
+                matched = False
+
+        if matched and i != old:
+            return i
+
     return 0
 
 
-def has_vertical(grid: list) -> int:
+def has_vertical(grid: list, old) -> int:
     # Transpose grid for ease of checking
     grid_T = list(zip(*grid))
-    for i in range(1, len(grid_T)):
-        # select rows mirror is between
-        row_up, row_down = i - 1, i
-
-        for j in range(len(grid_T)):
-            # print(j)
-            if row_up - j < 0 or row_down + j > len(grid_T) - 1:
-                return i
-            if grid_T[row_up - j] != grid_T[row_down + j]:
-                break
-    return 0
+    return has_horizontal(grid_T, old)
 
 def c1(data: list) -> int:
 
@@ -86,16 +81,16 @@ def c2(data:list) -> int:
                 new_grid = deepcopy(grid)
                 new_grid[i][j] = "#" if element == "." else "."
 
-                hr = has_horizontal(new_grid)
-                if hr and hr != horizontal:
+                hr = has_horizontal(new_grid, horizontal)
+                if hr:
                     print(f"found smudge on grid {k} at location {i, j} that creates HORIZONTAL reflection on row {hr}")
                     # pprint(new_grid)
                     found_smudge = True
                     summary += hr * 100
                     break
 
-                vr = has_vertical(new_grid)
-                if vr and vr != vertical:
+                vr = has_vertical(new_grid, vertical)
+                if vr:
                     print(f"found smudge on grid {k} at location {i, j} that creates VERTICAL reflection on column {vr}")
                     found_smudge = True
                     summary += vr
