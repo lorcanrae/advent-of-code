@@ -2,19 +2,14 @@ from pprint import pprint
 import re
 
 
-
-
-
-
 def parse_data(path: str) -> list:
     with open(path, "r") as f:
         # lines = [[e for e in l.strip()] for l in f.readlines()]
         lines = [l.strip() for l in f.readlines()]
 
-
-
-
     return lines
+
+
 
 
 

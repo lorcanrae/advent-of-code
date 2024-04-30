@@ -34,10 +34,10 @@ jobs:
     - name: Format with Black
       run: black .
 
-    # - name: Commit changes
-    #   # if: ${{ steps.format.outputs.has-changed == 'true' }}
-    #   run: |
-    #     git config --global user.name 'Lorcan Rae'
-    #     git config --global user.email 'lorcanrae@gmail.com'
-    #     git commit -am "GHA Applying PEP8 formatting with Black"
-    #     git push
+    - name: Commit changes
+      # if: ${{ steps.format.outputs.has-changed == 'true' }}
+      run: |
+        git config --global user.name 'Formatter'
+        git config --global user.email 'formatbot@format.bot'
+        git commit -am "GHA Applying PEP8 formatting with Black"
+        git push
