@@ -16,6 +16,8 @@ jobs:
     # Check out most recent branch
     - name: Check out Branch
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     # Setup python environment
     - name: Set up Python 3.10
@@ -29,6 +31,13 @@ jobs:
         python -m pip install --upgrade pip cython wheel
         pip install -r requirements.txt
 
-    # Format files with Black
     - name: Format with Black
       run: black .
+
+    - name: Commit changes
+      if: ${{ steps.format.outputs.has-changed == 'true' }}
+      run: |
+        git config --global user.name 'Format Bot'
+        git config --global user.email ''
+        git commit -am "Applying PEP8 formatting with Black"
+        git push
