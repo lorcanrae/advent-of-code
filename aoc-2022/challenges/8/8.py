@@ -1,9 +1,11 @@
 import numpy as np
 
+
 def get_data():
-    with open('input.txt', 'r') as f:
-        tree_grid = [[int(n) for n in line.strip('\n')] for line in f.readlines()]
+    with open("input.txt", "r") as f:
+        tree_grid = [[int(n) for n in line.strip("\n")] for line in f.readlines()]
     return tree_grid
+
 
 def part1(data):
     tree_grid = np.array(data)
@@ -12,17 +14,19 @@ def part1(data):
         for j in range(1, tree_grid.shape[1] - 1):
 
             right = tree_grid[i, j] > np.max(tree_grid[i, :j])
-            left = tree_grid[i, j] > np.max(tree_grid[i, j + 1:])
+            left = tree_grid[i, j] > np.max(tree_grid[i, j + 1 :])
             top = tree_grid[i, j] > np.max(tree_grid[:i, j])
-            bottom = tree_grid[i, j] > np.max(tree_grid[i + 1:, j])
+            bottom = tree_grid[i, j] > np.max(tree_grid[i + 1 :, j])
             visible += right or left or top or bottom
 
     visible += 2 * sum(tree_grid.shape) - 4
     print(visible)
     return visible
 
+
 def part2(data):
     tree_grid = np.array(data)
+
     # Helper
     def calc_score(cur_tree, line_of_trees):
         # I am unhappy this function looks this way
@@ -34,6 +38,7 @@ def part2(data):
                 score += 1
                 return score
         return score
+
     scores = np.zeros(tree_grid.shape)
 
     for i in range(tree_grid.shape[0]):
@@ -42,19 +47,20 @@ def part2(data):
             score = 1
             # from current tree
             # looking right
-            score *= calc_score(cur_tree_height, tree_grid[i, j+1:])
+            score *= calc_score(cur_tree_height, tree_grid[i, j + 1 :])
             # looking left
             score *= calc_score(cur_tree_height, tree_grid[i, :j][::-1])
             # looking up
             score *= calc_score(cur_tree_height, tree_grid[:i, j][::-1])
             # looking down
-            score *= calc_score(cur_tree_height, tree_grid[i+1:, j])
+            score *= calc_score(cur_tree_height, tree_grid[i + 1 :, j])
 
             scores[i, j] = score
 
     print(int(np.max(scores)))
     return int(np.max(scores))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     part1(get_data())
     part2(get_data())

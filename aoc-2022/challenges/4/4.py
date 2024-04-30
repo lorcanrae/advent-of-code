@@ -1,7 +1,8 @@
 def get_data():
-    with open('input.txt', 'r') as f:
-        lines = [line.strip('\n').split(',') for line in f]
+    with open("input.txt", "r") as f:
+        lines = [line.strip("\n").split(",") for line in f]
     return lines
+
 
 def part1(data):
     # Checking each pair in input
@@ -10,8 +11,10 @@ def part1(data):
         # Convert n-m to sequential set for each elf, list of sets per pair
         sequential_zones = []
         for elf in pair:
-            sec_start_stop = [int(zone) for zone in elf.split('-')]
-            sequential_zones.append(set(range(sec_start_stop[0], sec_start_stop[1] + 1)))
+            sec_start_stop = [int(zone) for zone in elf.split("-")]
+            sequential_zones.append(
+                set(range(sec_start_stop[0], sec_start_stop[1] + 1))
+            )
 
         # Find overlapping elements and check if overlap == elf1 or elf2 set
         # Could also use .issubset() and .issuperset()
@@ -22,6 +25,7 @@ def part1(data):
     print(counter)
     return counter
 
+
 def part2(data):
     # Checking each pair in input
     counter = 0
@@ -29,8 +33,10 @@ def part2(data):
         # Convert n-m to sequential set for each elf, list of sets per pair
         sequential_zones = []
         for elf in pair:
-            sec_start_stop = [int(zone) for zone in elf.split('-')]
-            sequential_zones.append(set(range(sec_start_stop[0], sec_start_stop[1] + 1)))
+            sec_start_stop = [int(zone) for zone in elf.split("-")]
+            sequential_zones.append(
+                set(range(sec_start_stop[0], sec_start_stop[1] + 1))
+            )
 
         # Find overlapping elements and check if there is any overlap
         overlap = sequential_zones[0].intersection(sequential_zones[1])
@@ -40,6 +46,7 @@ def part2(data):
     print(counter)
     return counter
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     part1(get_data())
     part2(get_data())

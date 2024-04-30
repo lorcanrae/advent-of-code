@@ -1,6 +1,7 @@
 from pprint import pprint
 import re
 
+
 def parse_data(path: str) -> list:
     with open(path, "r") as f:
         # lines = [[e for e in l.strip()] for l in f.readlines()]
@@ -8,7 +9,8 @@ def parse_data(path: str) -> list:
 
     return lines
 
-def c1(data:list) -> int:
+
+def c1(data: list) -> int:
     # Transpose
 
     data_T = list(map(list, zip(*data)))
@@ -24,13 +26,11 @@ def c1(data:list) -> int:
     rounds = [match.start() for match in re.finditer(round_pattern, data_T[0])]
     new_row = ["."] * len_
 
-
     for i, cube in enumerate(cubes):
         print(cube)
         # first cube
         if i == 0:
             section = new_row[:cube]
-
 
         # intermediate cube
 
@@ -42,9 +42,6 @@ def c1(data:list) -> int:
 
     print(cubes)
     print(rounds)
-
-
-
 
 
 if __name__ == "__main__":
