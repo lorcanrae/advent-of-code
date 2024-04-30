@@ -10,16 +10,6 @@ def parse_data(path: str) -> list:
     return lines
 
 
-
-
-
-
-
-
-
-
-
-
 def c1(data: list) -> int:
     # Transpose
 
