@@ -2,12 +2,23 @@ from pprint import pprint
 import re
 
 
+
+
+
+
+
+
 def parse_data(path: str) -> list:
     with open(path, "r") as f:
         # lines = [[e for e in l.strip()] for l in f.readlines()]
         lines = [l.strip() for l in f.readlines()]
 
     return lines
+
+
+
+
+
 
 
 def c1(data: list) -> int:
@@ -21,6 +32,9 @@ def c1(data: list) -> int:
 
     cube_pattern = r"#"
     round_pattern = r"O"
+
+
+
 
     cubes = [0] + [match.start() for match in re.finditer(cube_pattern, data_T[0])]
     rounds = [match.start() for match in re.finditer(round_pattern, data_T[0])]
