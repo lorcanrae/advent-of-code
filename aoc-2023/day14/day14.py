@@ -22,6 +22,9 @@ def parse_data(path: str) -> list:
 
 
 
+
+
+
 def c1(data: list) -> int:
     # Transpose
 
