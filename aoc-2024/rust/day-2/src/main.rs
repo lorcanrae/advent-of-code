@@ -39,8 +39,8 @@ fn part_two(data: &Vec<Vec<i32>>) -> i32 {
     let mut safe_rows = 0;
 
     for row in data {
-        // All increasing
         let is_safe = |row: &[i32]| {
+            // All increasing
             let increasing = row.windows(2).all(|pair| {
                 let diff = pair[1] - pair[0];
                 (1..=3).contains(&diff)
