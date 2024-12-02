@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::{self, BufRead, Result};
 
 fn parse_data(path: &str) -> Result<(Vec<i32>, Vec<i32>)> {
-    let file = File::open(path)?;
-    let reader = io::BufReader::new(file);
+    // let file = File::open(path)?;
+    let reader = io::BufReader::new(File::open(path)?);
 
     let mut column1: Vec<i32> = vec![];
     let mut column2: Vec<i32> = vec![];
@@ -30,13 +30,11 @@ fn sort_and_compute_difference(col1: &[i32], col2: &[i32]) -> i32 {
     sorted_col1.sort();
     sorted_col2.sort();
 
-    let differences: Vec<i32> = sorted_col1
+    sorted_col1
         .iter()
         .zip(sorted_col2.iter())
         .map(|(a, b)| (a - b).abs())
-        .collect();
-
-    differences.iter().sum()
+        .sum()
 }
 
 fn similarity_score(col1: &[i32], col2: &[i32]) -> i32 {
