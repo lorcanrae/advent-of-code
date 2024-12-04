@@ -34,7 +34,6 @@ fn part_one(matrix: &Vec<Vec<char>>) -> i32 {
                 // Left
                 if j_col >= 3
                     && (0..4).map(|i| matrix[i_row][j_col - i]).collect::<Vec<_>>() == target
-                // && matrix[i_row][j_col - 3..j_col] == target
                 {
                     counter += 1;
                 };
