@@ -11,6 +11,7 @@ use std::{
     env, fs,
 };
 
+#[derive(Hash, PartialEq, Eq, Clone)]
 enum Direction {
     North,
     South,
@@ -69,19 +70,16 @@ fn parse_input(data: Span) -> IResult<Span, ((IVec2, char), HashMap<IVec2, char>
     Ok((input, (guard, walls, n_rows, n_cols)))
 }
 
-fn part_one(data: (Span, ((IVec2, char), HashMap<IVec2, char>, i32, i32))) -> Result<String> {
+fn part_one(data: &(Span, ((IVec2, char), HashMap<IVec2, char>, i32, i32))) -> Result<String> {
     let (_, ((mut guard_pos, _), walls, n_rows, n_cols)) = data;
 
     let mut direction = Direction::North;
 
     let mut visited: HashSet<IVec2> = HashSet::from([guard_pos]);
 
-    while (0..n_rows).contains(&guard_pos.y) && (0..n_cols).contains(&guard_pos.x) {
+    while (0..*n_rows).contains(&guard_pos.y) && (0..*n_cols).contains(&guard_pos.x) {
         let next_pos = guard_pos + direction.to_ivec2();
-        // Check if there is a wall there else turn right
         if walls.contains_key(&next_pos) {
-            // turn right
-            visited.insert(guard_pos);
             direction = direction.turn_right();
         } else {
             // move forward
@@ -93,8 +91,57 @@ fn part_one(data: (Span, ((IVec2, char), HashMap<IVec2, char>, i32, i32))) -> Re
     Ok(visited.len().to_string())
 }
 
-fn part_two() {
-    todo!()
+fn part_two(data: (Span, ((IVec2, char), HashMap<IVec2, char>, i32, i32))) -> Result<String> {
+    let (_, ((mut guard_pos, _), walls, n_rows, n_cols)) = data;
+
+    let guard_start_pos = guard_pos;
+
+    let mut direction = Direction::North;
+    let mut visited: HashSet<IVec2> = HashSet::from([guard_pos]);
+
+    loop {
+        let next_pos = guard_pos + direction.to_ivec2();
+
+        if walls.contains_key(&next_pos) {
+            direction = direction.turn_right();
+        } else if (0..n_rows).contains(&guard_pos.y) && (0..n_cols).contains(&guard_pos.x) {
+            // move forward
+            visited.insert(guard_pos);
+            guard_pos = next_pos;
+        } else {
+            break;
+        }
+    }
+    visited.remove(&guard_start_pos);
+
+    let loop_walls = visited
+        .iter()
+        .filter(|new_wall| {
+            let mut direction = Direction::North;
+            let mut guard_pos = guard_start_pos;
+
+            let mut visited: HashSet<(IVec2, Direction)> =
+                HashSet::from([(guard_pos, direction.clone())]);
+
+            loop {
+                let next_pos = guard_pos + direction.to_ivec2();
+
+                if visited.contains(&(next_pos, direction.clone())) {
+                    break true;
+                } else if walls.contains_key(&next_pos) || &&next_pos == new_wall {
+                    direction = direction.turn_right();
+                    continue;
+                } else if (0..n_rows).contains(&guard_pos.y) && (0..n_cols).contains(&guard_pos.x) {
+                    visited.insert((guard_pos, direction.clone()));
+                    guard_pos = next_pos;
+                } else {
+                    break false;
+                }
+            }
+        })
+        .count();
+
+    Ok(loop_walls.to_string())
 }
 
 fn main() -> Result<()> {
@@ -102,10 +149,14 @@ fn main() -> Result<()> {
     let file_name = args[1].to_string();
     let data = fs::read_to_string(file_name)?;
 
-    let data = parse_input(Span::new(&data)).unwrap();
+    let parsed_data = parse_input(Span::new(&data)).unwrap();
 
-    let p1 = part_one(data);
-    println!("{p1:?}");
+    let p1 = part_one(&parsed_data)?;
+    println!("{p1}");
+
+    let parsed_data = parse_input(Span::new(&data)).unwrap();
+    let p2 = part_two(parsed_data)?;
+    println!("{p2}");
 
     Ok(())
 }
