@@ -21,36 +21,10 @@ fn parse_input(data: &str) -> IResult<&str, Vec<(u64, Vec<u64>)>> {
 
 fn part_one(data: Vec<(u64, Vec<u64>)>) -> Result<String> {
     let data = data.clone();
-    // let mut cumulative = 0;
-    // dbg!(&data);
-    // for (target, vals) in data {
-    //     let permutations = (0..vals.len() - 1)
-    //         .map(|_| vec!['+', '*'])
-    //         .multi_cartesian_product();
-    //     // dbg!(&permutations);
-
-    //     for operations in permutations {
-    //         let mut result = vals[0];
-    //         for (i, op) in operations.iter().enumerate() {
-    //             if result > target {
-    //                 break;
-    //             }
-    //             match op {
-    //                 '+' => result += vals[i + 1],
-    //                 '*' => result *= vals[i + 1],
-    //                 _ => eprint!("booooooo"),
-    //             }
-    //         }
-    //         if result == target {
-    //             cumulative += target;
-    //             break;
-    //         }
-    //     }
-    // }
 
     let result: u64 = data
         .iter()
-        .map(|(target, sequence)| {
+        .filter_map(|(target, sequence)| {
             let operator_count = sequence.len() - 1;
             dbg!(operator_count);
             (0..operator_count)
@@ -59,17 +33,17 @@ fn part_one(data: Vec<(u64, Vec<u64>)>) -> Result<String> {
                 .any(|permutation| {
                     let mut operation = permutation.iter();
                     *target
-                        == sequence.iter().copied().reduce(|acc, next| {
-                            match operation.next().unwrap() {
+                        == sequence
+                            .iter()
+                            .copied()
+                            .reduce(|acc, next| match operation.next().unwrap() {
                                 '+' => acc + next,
                                 '*' => acc * next,
                                 _ => panic!("Invalid operation"),
-                            }
-                        })
+                            })
+                            .unwrap()
                 })
-                .then_some(target);
-
-            target
+                .then_some(target)
         })
         .sum();
     Ok(result.to_string())
