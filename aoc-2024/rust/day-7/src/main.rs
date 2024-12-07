@@ -5,6 +5,7 @@ use nom::character::complete::{self, newline, space1};
 use nom::multi::separated_list1;
 use nom::sequence::separated_pair;
 use nom::IResult;
+use rayon::prelude::*;
 use std::env;
 use std::fs;
 
@@ -19,11 +20,9 @@ fn parse_input(data: &str) -> IResult<&str, Vec<(u64, Vec<u64>)>> {
     )(data)
 }
 
-fn part_one(data: &Vec<(u64, Vec<u64>)>) -> Result<String> {
-    let data = data.clone();
-
+fn part_one(data: &[(u64, Vec<u64>)]) -> Result<String> {
     let accumulation: u64 = data
-        .iter()
+        .par_iter()
         .filter_map(|(target, sequence)| {
             let operator_count = sequence.len() - 1;
             (0..operator_count)
@@ -48,11 +47,9 @@ fn part_one(data: &Vec<(u64, Vec<u64>)>) -> Result<String> {
     Ok(accumulation.to_string())
 }
 
-fn part_two(data: &Vec<(u64, Vec<u64>)>) -> Result<String> {
-    let data = data.clone();
-
+fn part_two(data: &[(u64, Vec<u64>)]) -> Result<String> {
     let accumulation: u64 = data
-        .iter()
+        .par_iter()
         .filter_map(|(target, sequence)| {
             let operator_count = sequence.len() - 1;
             (0..operator_count)
