@@ -31,18 +31,18 @@ fn part_one(data: &[((i32, i32), char)], n_rows: &i32, n_cols: &i32) -> Result<S
     let x_bounds = 0..*n_cols;
     let y_bounds = 0..*n_rows;
 
-    let result = data
+    let locations = data
         .chunk_by(|a, b| a.1 == b.1)
         .flat_map(|chunk| {
             chunk
                 .iter()
-                .combinations(2)
-                .flat_map(|antennas| {
-                    let x_diff = antennas[0].0 .0 - antennas[1].0 .0;
-                    let y_diff = antennas[0].0 .1 - antennas[1].0 .1;
+                .tuple_combinations()
+                .flat_map(|(a, b)| {
+                    let x_diff = a.0 .0 - b.0 .0;
+                    let y_diff = a.0 .1 - b.0 .1;
 
-                    let plus = (antennas[0].0 .0 + x_diff, antennas[0].0 .1 + y_diff);
-                    let minus = (antennas[1].0 .0 - x_diff, antennas[1].0 .1 - y_diff);
+                    let plus = (a.0 .0 + x_diff, a.0 .1 + y_diff);
+                    let minus = (b.0 .0 - x_diff, b.0 .1 - y_diff);
 
                     [plus, minus]
                 })
@@ -52,24 +52,24 @@ fn part_one(data: &[((i32, i32), char)], n_rows: &i32, n_cols: &i32) -> Result<S
         })
         .unique()
         .count();
-    Ok(result.to_string())
+    Ok(locations.to_string())
 }
 
 fn part_two(data: &[((i32, i32), char)], n_rows: &i32, n_cols: &i32) -> Result<String> {
     let x_bounds = 0..*n_cols;
     let y_bounds = 0..*n_rows;
 
-    let result = data
+    let locations = data
         .chunk_by(|a, b| a.1 == b.1)
         .flat_map(|chunk| {
             chunk
                 .iter()
-                .combinations(2)
-                .flat_map(|antennas| {
-                    let x_diff = antennas[0].0 .0 - antennas[1].0 .0;
-                    let y_diff = antennas[0].0 .1 - antennas[1].0 .1;
+                .tuple_combinations()
+                .flat_map(|(a, b)| {
+                    let x_diff = a.0 .0 - b.0 .0;
+                    let y_diff = a.0 .1 - b.0 .1;
 
-                    let plus: Vec<_> = successors(Some(antennas[0].0), |antenna| {
+                    let plus: Vec<_> = successors(Some(a.0), |antenna| {
                         let next_pos = (antenna.0 + x_diff, antenna.1 + y_diff);
                         if x_bounds.contains(&next_pos.0) && y_bounds.contains(&next_pos.1) {
                             Some(next_pos)
@@ -79,7 +79,7 @@ fn part_two(data: &[((i32, i32), char)], n_rows: &i32, n_cols: &i32) -> Result<S
                     })
                     .collect();
 
-                    let minus: Vec<_> = successors(Some(antennas[1].0), |antenna| {
+                    let minus: Vec<_> = successors(Some(b.0), |antenna| {
                         let next_pos = (antenna.0 - x_diff, antenna.1 - y_diff);
                         if x_bounds.contains(&next_pos.0) && y_bounds.contains(&next_pos.1) {
                             Some(next_pos)
@@ -95,7 +95,7 @@ fn part_two(data: &[((i32, i32), char)], n_rows: &i32, n_cols: &i32) -> Result<S
         })
         .unique()
         .count();
-    Ok(result.to_string())
+    Ok(locations.to_string())
 }
 
 fn main() -> Result<()> {
