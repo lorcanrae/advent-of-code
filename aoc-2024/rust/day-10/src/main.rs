@@ -8,26 +8,18 @@ use anyhow::Result;
 use petgraph::graph::DiGraph;
 use petgraph::visit::Dfs;
 
-fn parse_data(input: &str) -> Result<Vec<Vec<i32>>> {
-    let matrix: Vec<Vec<i32>> = input
+fn parse_data(input: &str) -> Result<Vec<Vec<u32>>> {
+    let matrix: Vec<Vec<u32>> = input
         .lines()
-        .map(|line| {
-            line.chars()
-                .map(|c| c.to_digit(10).map(|d| d as i32).unwrap())
-                .collect()
-        })
+        .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect())
         .collect();
 
     Ok(matrix)
 }
 
-fn part_one(grid: &[Vec<i32>]) -> Result<String> {
+fn part_one(grid: &[Vec<u32>]) -> Result<String> {
     let rows = grid.len();
     let cols = grid[0].len();
-
-    // Helper function to check valid grid bounds
-    // let is_valid =
-    //     |x: isize, y: isize| -> bool { x >= 0 && x < rows as isize && y >= 0 && y < cols as isize };
 
     // Build the graph
     let mut graph = DiGraph::new();
@@ -44,6 +36,7 @@ fn part_one(grid: &[Vec<i32>]) -> Result<String> {
     // Directions for moving north, south, east, west
     let directions = vec![(0, 1), (1, 0), (0, -1), (-1, 0)];
 
+    // This casting sucks
     for row in 0..rows {
         for col in 0..cols {
             let current_value = grid[row][col];
@@ -70,30 +63,25 @@ fn part_one(grid: &[Vec<i32>]) -> Result<String> {
 
     // println!("{:?}", Dot::with_config(&graph, &[]));
 
-    // dbg!(&node_map);
-    // todo!("");
-
     // Now find the reachable nines
-
-    let mut results = HashMap::new();
-
-    for ((row, col), start_node) in node_map {
-        if grid[row][col] != 0 {
-            continue;
-        }
-        let mut dfs = Dfs::new(&graph, start_node);
-        let mut summits = 0;
-
-        while let Some(node) = dfs.next(&graph) {
-            let (r, c) = graph[node];
-            if grid[r][c] == 9 {
-                summits += 1;
+    let total_summits: i32 = node_map
+        .iter()
+        .filter_map(|(&(row, col), &start_node)| {
+            if grid[row][col] != 0 {
+                return None;
             }
-        }
-        results.insert((row, col), summits);
-    }
+            let mut dfs = Dfs::new(&graph, start_node);
+            let mut count = 0;
+            while let Some(node) = dfs.next(&graph) {
+                let (r, c) = graph[node];
+                if grid[r][c] == 9 {
+                    count += 1;
+                }
+            }
+            Some(count)
+        })
+        .sum();
 
-    let total_summits: i32 = results.iter().map(|(_, summits)| *summits as i32).sum();
     Ok(total_summits.to_string())
 }
 
