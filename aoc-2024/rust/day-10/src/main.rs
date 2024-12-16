@@ -8,6 +8,8 @@ use anyhow::Result;
 use petgraph::graph::DiGraph;
 use petgraph::visit::Dfs;
 
+use pathfinding::prelude::*;
+
 fn parse_data(input: &str) -> Result<Vec<Vec<u32>>> {
     let matrix: Vec<Vec<u32>> = input
         .lines()
@@ -20,6 +22,7 @@ fn parse_data(input: &str) -> Result<Vec<Vec<u32>>> {
 fn part_one(grid: &[Vec<u32>]) -> Result<String> {
     let rows = grid.len();
     let cols = grid[0].len();
+    let directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
 
     // Build the graph
     let mut graph = DiGraph::new();
@@ -33,9 +36,6 @@ fn part_one(grid: &[Vec<u32>]) -> Result<String> {
     }
 
     // Add edges to the graph
-    // Directions for moving north, south, east, west
-    let directions = vec![(0, 1), (1, 0), (0, -1), (-1, 0)];
-
     // This casting sucks
     for row in 0..rows {
         for col in 0..cols {
@@ -85,6 +85,59 @@ fn part_one(grid: &[Vec<u32>]) -> Result<String> {
     Ok(total_summits.to_string())
 }
 
+fn part_two(grid: &[Vec<u32>]) -> Result<String> {
+    let rows = grid.len();
+    let cols = grid[0].len();
+
+    let get_neighbours = |(row, col): (usize, usize)| -> Vec<(usize, usize)> {
+        let directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
+        let current_value = grid[row][col];
+
+        directions
+            .iter()
+            .filter_map(|&(dx, dy)| {
+                let new_row = row as isize + dx;
+                let new_col = col as isize + dy;
+
+                if new_row >= 0
+                    && new_row < rows as isize
+                    && new_col >= 0
+                    && new_col < cols as isize
+                {
+                    let new_row = new_row as usize;
+                    let new_col = new_col as usize;
+
+                    if grid[new_row][new_col] == current_value + 1 {
+                        Some((new_row, new_col))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect()
+    };
+
+    let mut total_paths = 0;
+
+    for row in 0..rows {
+        for col in 0..cols {
+            if grid[row][col] == 0 {
+                let start = (row, col);
+
+                total_paths += count_paths(
+                    start,
+                    |&(r, c)| get_neighbours((r, c)),
+                    |&(r, c)| grid[r][c] == 9,
+                );
+            }
+        }
+    }
+
+    Ok(total_paths.to_string())
+}
+
 fn main() -> Result<()> {
     let args: Vec<_> = env::args().collect();
     let file_name = args[1].to_string();
@@ -95,6 +148,10 @@ fn main() -> Result<()> {
     let p1 = part_one(&parsed_data).unwrap();
 
     println!("{p1}");
+
+    let p2 = part_two(&parsed_data).unwrap();
+
+    println!("{p2}");
 
     Ok(())
 }
