@@ -35,6 +35,35 @@ fn part_one(file_path: &str) -> Result<String> {
     Ok(result.to_string())
 }
 
+fn part_two(file_path: &str) -> Result<String> {
+    let data = parse(file_path)?;
+
+    let result: i64 = data
+        .iter()
+        .map(|line| {
+            let mut vals: Vec<i64> = vec![];
+            let mut index = 0;
+            for j in (0..12).rev() {
+                let end = line.len() - j;
+                let slice = &line[index..end];
+                let max = *slice.iter().max().unwrap() as i64;
+                let max_index = slice.iter().position(|&val| val as i64 == max).unwrap();
+
+                vals.push(max);
+                index += max_index + 1;
+            }
+
+            vals.iter()
+                .map(|v| v.to_string())
+                .collect::<String>()
+                .parse::<i64>()
+                .unwrap()
+        })
+        .sum();
+
+    Ok(result.to_string())
+}
+
 fn main() -> Result<()> {
     let file_path = "inputs/input.txt";
 
@@ -42,6 +71,10 @@ fn main() -> Result<()> {
     println!("P1 solution: {p1}");
     // 16937 - too low
     // 17309 - too high
+
+    let p2 = part_two(file_path)?;
+    println!("P2 solution: {p2}");
+    // 16934976227338 - too low
 
     Ok(())
 }
