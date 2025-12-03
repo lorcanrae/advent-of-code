@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use std::fs;
 
 fn parse(path: &str) -> Result<Vec<Vec<i32>>> {
