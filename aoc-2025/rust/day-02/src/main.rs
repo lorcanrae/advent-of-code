@@ -65,7 +65,7 @@ fn part_two(data: &[(i64, i64)]) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let file_path = "inputs/input.txt";
+    let file_path = "inputs/test.txt";
     let data = parse_data(file_path)?;
 
     let p1 = part_one(&data)?;
