@@ -72,11 +72,7 @@ fn part_one(file_path: &str) -> Result<String> {
     let data = parse(file_path)?;
 
     let num_rows = data.len();
-    let num_cols = if num_rows > 0 {
-        data[0].len()
-    } else {
-        panic!()
-    };
+    let num_cols = data[0].len();
 
     let counter = data
         .iter()
@@ -93,11 +89,7 @@ fn part_two(file_path: &str) -> Result<String> {
     let mut total_removed = 0;
 
     let num_rows = data.len();
-    let num_cols = if num_rows > 0 {
-        data[0].len()
-    } else {
-        panic!()
-    };
+    let num_cols = data[0].len();
 
     loop {
         // per iteration state
@@ -114,7 +106,7 @@ fn part_two(file_path: &str) -> Result<String> {
         if removable_rolls.is_empty() {
             break;
         } else {
-            total_removed += removable_rolls.len()
+            total_removed += removable_rolls.len();
         };
 
         // update grid state
