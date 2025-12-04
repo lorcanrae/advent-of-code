@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::fs;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn parse(path: &str) -> Result<Vec<Vec<GridCell>>> {
     let raw_data = fs::read_to_string(path)?;
@@ -37,55 +37,30 @@ struct GridCell {
 
 impl GridCell {
     fn count_adjacent(&self, grid: &[Vec<GridCell>], num_rows: usize, num_cols: usize) -> usize {
-        let mut adj_rolls = 0;
-        // All the cases
-        // left
-        if self.coords.1 > 0 && grid[self.coords.0][self.coords.1 - 1].has_paper {
-            adj_rolls += 1;
-        }
-        // right
-        if self.coords.1 + 1 < num_cols && grid[self.coords.0][self.coords.1 + 1].has_paper {
-            adj_rolls += 1;
-        }
-        // up
-        if self.coords.0 > 0 && grid[self.coords.0 - 1][self.coords.1].has_paper {
-            adj_rolls += 1;
-        }
-        // down
-        if self.coords.0 + 1 < num_rows && grid[self.coords.0 + 1][self.coords.1].has_paper {
-            adj_rolls += 1;
-        }
-        // up left
-        if self.coords.0 > 0
-            && self.coords.1 > 0
-            && grid[self.coords.0 - 1][self.coords.1 - 1].has_paper
-        {
-            adj_rolls += 1;
-        }
-        // up right
-        if self.coords.0 > 0
-            && self.coords.1 + 1 < num_cols
-            && grid[self.coords.0 - 1][self.coords.1 + 1].has_paper
-        {
-            adj_rolls += 1;
-        }
-        // down left
-        if self.coords.0 + 1 < num_rows
-            && self.coords.1 > 0
-            && grid[self.coords.0 + 1][self.coords.1 - 1].has_paper
-        {
-            adj_rolls += 1;
-        }
+        const DIRECTIONS: [(isize, isize); 8] = [
+            (-1, -1),
+            (-1, 0),
+            (-1, 1),
+            (0, -1),
+            (0, 1),
+            (1, -1),
+            (1, 0),
+            (1, 1),
+        ];
 
-        // down right
-        if self.coords.0 + 1 < num_rows
-            && self.coords.1 + 1 < num_cols
-            && grid[self.coords.0 + 1][self.coords.1 + 1].has_paper
-        {
-            adj_rolls += 1;
-        }
+        DIRECTIONS
+            .iter()
+            .filter(|(dr, dc)| {
+                let new_row = self.coords.0 as isize + dr;
+                let new_col = self.coords.1 as isize + dc;
 
-        adj_rolls
+                new_row >= 0
+                    && new_row < num_rows as isize
+                    && new_col >= 0
+                    && new_col < num_cols as isize
+                    && grid[new_row as usize][new_col as usize].has_paper
+            })
+            .count()
     }
 
     fn remove_paper(&mut self) {
@@ -95,7 +70,6 @@ impl GridCell {
 
 fn part_one(file_path: &str) -> Result<String> {
     let data = parse(file_path)?;
-    let mut counter = 0;
 
     let num_rows = data.len();
     let num_cols = if num_rows > 0 {
@@ -104,15 +78,12 @@ fn part_one(file_path: &str) -> Result<String> {
         panic!()
     };
 
-    for i_row in 0..num_rows {
-        for j_col in 0..num_cols {
-            if data[i_row][j_col].has_paper {
-                let adj_rolls = data[i_row][j_col].count_adjacent(&data, num_rows, num_cols);
-
-                counter += if adj_rolls < 4 { 1 } else { 0 }
-            }
-        }
-    }
+    let counter = data
+        .iter()
+        .flatten()
+        .filter(|cell| cell.has_paper)
+        .filter(|cell| cell.count_adjacent(&data, num_rows, num_cols) < 4)
+        .count();
 
     Ok(counter.to_string())
 }
@@ -129,33 +100,27 @@ fn part_two(file_path: &str) -> Result<String> {
     };
 
     loop {
-        // state
+        // per iteration state
         let mut removable_rolls: Vec<GridCell> = vec![];
 
-        // calculate removable rolls
-        for i_row in 0..num_rows {
-            for j_col in 0..num_cols {
-                if data[i_row][j_col].has_paper {
-                    let adj_rolls = data[i_row][j_col].count_adjacent(&data, num_rows, num_cols);
+        // find removable
+        data.iter()
+            .flatten()
+            .filter(|cell| cell.has_paper)
+            .filter(|cell| cell.count_adjacent(&data, num_rows, num_cols) < 4)
+            .for_each(|&cell| removable_rolls.push(cell));
 
-                    if adj_rolls < 4 {
-                        removable_rolls.push(data[i_row][j_col]);
-                    }
-                }
-            }
-        }
-
-        // add number of removable rolls to accumulator
+        // add num removable to accumulator else break
         if removable_rolls.is_empty() {
             break;
         } else {
             total_removed += removable_rolls.len()
         };
 
-        // update grid
-        for roll in removable_rolls {
-            data[roll.coords.0][roll.coords.1].remove_paper();
-        }
+        // update grid state
+        removable_rolls
+            .iter()
+            .for_each(|roll| data[roll.coords.0][roll.coords.1].remove_paper());
     }
 
     Ok(total_removed.to_string())
@@ -167,12 +132,14 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let p1 = part_one(file_path)?;
     let duration = start.elapsed();
-    println!("p1 solution: {p1} in {duration:?}"); // 2.584 ms
+    println!("p1 solution: {p1} in {duration:?}"); // 416.372µs
+    // 1363
 
     let start = Instant::now();
     let p2 = part_two(file_path)?;
     let duration = start.elapsed();
-    println!("p2 solution: {p2} in {duration:?}"); // 55. 083 ms
+    println!("p2 solution: {p2} in {duration:?}"); // 4.716294ms
+    // 8184
 
     Ok(())
 }
