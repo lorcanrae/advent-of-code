@@ -31,22 +31,58 @@ fn parse(path: &str) -> Result<(Vec<RangeInclusive<u64>>, HashSet<u64>)> {
 fn part_one(file_path: &str) -> Result<String> {
     let (ranges, nums) = parse(file_path)?;
 
-    let fresh = nums
+    let num_fresh = nums
         .iter()
         .filter(|n| ranges.iter().any(|range| range.contains(n)))
         .count();
-    Ok(fresh.to_string())
+
+    Ok(num_fresh.to_string())
+}
+
+fn part_two(file_path: &str) -> Result<String> {
+    let (ranges, _) = parse(file_path)?;
+
+    // numbers are too big to expand into collections of values :(
+
+    // convert to (start, end) tuples and sort
+    let mut sorted: Vec<(u64, u64)> = ranges.iter().map(|r| (*r.start(), *r.end())).collect();
+    sorted.sort();
+
+    // merge overlapping/adjacent
+    let mut merged = vec![sorted[0]];
+
+    sorted[1..].iter().for_each(|(start, end)| {
+        let start = *start;
+        let end = *end;
+
+        let last = merged.last_mut().unwrap();
+
+        // comp n-1.end vs n.start
+        if start <= last.1 + 1 {
+            last.1 = last.1.max(end);
+        } else {
+            merged.push((start, end));
+        }
+    });
+
+    // Diff merged ranges, adjust for inclusive, sum
+    let num_fresh: u64 = merged.iter().map(|(start, end)| end - start + 1).sum();
+
+    Ok(num_fresh.to_string())
 }
 
 fn main() -> Result<()> {
     let file_path = "inputs/input.txt";
-    // let data = parse(file_path);
-    // dbg!(&data);
 
     let start = Instant::now();
     let p1 = part_one(file_path)?;
     let duration = start.elapsed();
-    println!("p1 solution: {p1} in {duration:?}"); // 416.372µs
+    println!("p1 solution: {p1} in {duration:?}"); // 250.433µs
+
+    let start = Instant::now();
+    let p2 = part_two(file_path)?;
+    let duration = start.elapsed();
+    println!("p2 solution: {p2} in {duration:?}"); // 103.783µs
 
     Ok(())
 }
