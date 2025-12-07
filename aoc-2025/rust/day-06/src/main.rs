@@ -208,7 +208,7 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let p2 = part_two_b(file_path)?;
     let duration = start.elapsed();
-    println!("p2 - reverse parse: {p2} in {duration:?}"); // 240.926µs
+    println!("p2 - reverse parse: {p2} in {duration:?}"); // 143.547µs
 
     Ok(())
 }
