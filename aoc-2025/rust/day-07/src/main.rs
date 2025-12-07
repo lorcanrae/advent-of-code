@@ -53,7 +53,7 @@ fn part_one(path: &str) -> Result<String> {
     Ok(splits.to_string())
 }
 
-fn part_two_basic(path: &str) -> Result<String> {
+fn part_two(path: &str) -> Result<String> {
     let grid = parse(path)?;
 
     let grid = grid
@@ -95,7 +95,7 @@ fn part_two_basic(path: &str) -> Result<String> {
     Ok(beams.values().sum::<usize>().to_string())
 }
 
-fn part_two(path: &str) -> Result<String> {
+fn part_two_fold(path: &str) -> Result<String> {
     let binding = fs::read_to_string(path)?;
     let mut lines_iter = binding.lines().enumerate();
 
@@ -138,26 +138,23 @@ fn part_two(path: &str) -> Result<String> {
 
 fn main() -> Result<()> {
     let file_path = "inputs/input.txt";
-    // let data = parse(file_path)?;
-    // dbg!(data);
 
     let start = Instant::now();
     let p1 = part_one(file_path)?;
     let duration = start.elapsed();
     println!("p1 solution: {p1} in {duration:?}"); // 321.311µs
     // test: 21
-    // 1550
 
     let start = Instant::now();
     let p2 = part_two(file_path)?;
     let duration = start.elapsed();
-    println!("p2 solution: {p2} in {duration:?}"); // 272.09µs
+    println!("p2 solution: {p2} in {duration:?}"); // 204.422µs
     // test: 40
 
     let start = Instant::now();
-    let p2 = part_two_basic(file_path)?;
+    let p2 = part_two_fold(file_path)?;
     let duration = start.elapsed();
-    println!("p2 solution: {p2} in {duration:?}"); // 204.422µs
+    println!("p2 solution: {p2} in {duration:?}"); // 272.09µs
     // test: 40
 
     Ok(())
