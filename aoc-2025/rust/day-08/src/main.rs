@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
 use glam::I64Vec3;
 use std::{
     collections::{HashMap, HashSet},
@@ -19,7 +19,7 @@ fn part_one(path: &str, n_iter: usize) -> Result<String> {
         .collect();
 
     // brute force should work
-    // will need some type of cache for distances
+    // will need some type of dist_pairs for distances
     let mut cache: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
 
     for i in 0..data.len() {
@@ -101,24 +101,23 @@ fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
         })
         .collect();
 
-    // brute force should work
-    // will need some type of cache for distances
-    let mut cache: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
-
+    // Calculate distances between pairs
+    let mut dist_pairs: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
     for i in 0..data.len() {
         for j in (i + 1)..data.len() {
             let dist = data[i].distance_squared(data[j]);
-            cache.push((dist, (data[i], data[j])));
+            dist_pairs.push((dist, (data[i], data[j])));
         }
     }
+
     // Sort by distance for easier lookup
-    cache.sort_by_key(|&(distance, _)| distance);
-    let cache_iter = cache.iter().take(n_iter);
+    dist_pairs.sort_by_key(|&(distance, _)| distance);
+    let dist_pairs_iter = dist_pairs.iter().take(n_iter);
 
     let mut all_circuits: Vec<HashSet<I64Vec3>> = Vec::new();
 
     // iterate n times
-    for (_, (p1, p2)) in cache_iter {
+    for (_, (p1, p2)) in dist_pairs_iter {
         // for each pair
         let mut pushed = false;
         for circuit in all_circuits.iter_mut() {
@@ -136,7 +135,6 @@ fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
 
         // merge connected circuits together
         let mut changed = true;
-
         while changed {
             changed = false;
 
@@ -156,11 +154,8 @@ fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
         }
     }
 
-    let mut circuit_lengths: Vec<usize> = all_circuits.iter().map(|v| v.len()).collect();
-    circuit_lengths.sort();
-    let top_three: Vec<usize> = circuit_lengths.iter().rev().take(3).copied().collect();
-
-    let result = top_three.iter().product::<usize>();
+    all_circuits.sort_by(|a, b| b.len().cmp(&a.len()));
+    let result: usize = all_circuits.iter().map(|v| v.len()).take(3).product();
 
     Ok(result.to_string())
 }
@@ -176,41 +171,34 @@ fn part_two(path: &str) -> Result<String> {
         .collect();
 
     // brute force should work
-    // will need some type of cache for distances
-    let mut cache: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
+    // calc distances and order
+    let mut dist_pairs: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
 
     for i in 0..data.len() {
         for j in (i + 1)..data.len() {
             let dist = data[i].distance_squared(data[j]);
-            cache.push((dist, (data[i], data[j])));
+            dist_pairs.push((dist, (data[i], data[j])));
         }
     }
     // Sort by distance for easier lookup
-    cache.sort_by_key(|&(distance, _)| distance);
+    dist_pairs.sort_by_key(|&(distance, _)| distance);
 
-    let mut all_circuits: Vec<Circuit> = Vec::new();
-    let mut p1x = 0;
-    let mut p2x = 0;
-
+    let mut all_circuits: Vec<HashSet<I64Vec3>> = Vec::new();
     // iterate all the times
-    for (i, (_, (p1, p2))) in cache.iter().enumerate() {
-        let prev_circuit_count = all_circuits.len();
-
+    for (_, (p1, p2)) in dist_pairs.iter() {
         // for each pair
         // check to see if a point already belongs to a circuit
         let mut pushed = false;
         for circuit in all_circuits.iter_mut() {
-            if circuit.contains_key(p1) || circuit.contains_key(p2) {
-                circuit.entry(*p1).or_insert_with(HashSet::new).insert(*p2);
-                circuit.entry(*p2).or_insert_with(HashSet::new).insert(*p1);
+            if circuit.contains(p1) || circuit.contains(p2) {
+                circuit.insert(*p2);
+                circuit.insert(*p1);
                 pushed = true;
             }
         }
-        // Or create a new circuit
+
         if !pushed {
-            let mut new_circuit: Circuit = HashMap::new();
-            new_circuit.entry(*p1).or_default().insert(*p2);
-            new_circuit.entry(*p2).or_default().insert(*p1);
+            let new_circuit: HashSet<I64Vec3> = HashSet::from([*p1, *p2]);
             all_circuits.push(new_circuit);
         }
 
@@ -218,38 +206,27 @@ fn part_two(path: &str) -> Result<String> {
         let mut changed = true;
         while changed {
             changed = false;
-
             'outer: for i in 0..all_circuits.len() {
                 for j in (i + 1)..all_circuits.len() {
-                    let has_overlap = all_circuits[i]
-                        .keys()
-                        .any(|key| all_circuits[j].contains_key(key));
+                    let has_overlap = !all_circuits[j].is_disjoint(&all_circuits[i]);
 
                     if has_overlap {
                         let circuit_j = all_circuits.remove(j);
+                        all_circuits[i].extend(circuit_j);
 
-                        for (point, connections) in circuit_j {
-                            all_circuits[i]
-                                .entry(point)
-                                .or_default()
-                                .extend(connections);
-                        }
                         changed = true;
                         break 'outer;
                     }
                 }
             }
         }
-        // dbg!(all_circuits.len());
-        if i > 2 && prev_circuit_count == 2 && all_circuits.len() == 1 {
-            p1x = p1.x;
-            p2x = p2.x;
 
-            // dbg!(p1, p2);
-            break;
+        if all_circuits.len() == 1 && all_circuits[0].len() == data.len() {
+            return Ok((p1.x * p2.x).to_string());
         }
     }
-    Ok((p1x * p2x).to_string())
+
+    bail!("Unprocessable");
 }
 
 fn main() -> Result<()> {
@@ -279,6 +256,7 @@ fn main() -> Result<()> {
     // test:
     // 750567975 - too high
     // 11597417 - too low
+    // 36045012
 
     Ok(())
 }
