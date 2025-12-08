@@ -54,24 +54,29 @@ fn part_one(path: &str) -> Result<String> {
 }
 
 fn part_two(path: &str) -> Result<String> {
-    let grid = parse(path)?;
+    let raw = fs::read_to_string(path)?;
+    let mut lines_iter = raw.lines();
 
-    let grid = grid
-        .into_iter()
-        .filter(|line| line.contains(&'S') || line.contains(&'^'))
-        .collect::<Vec<Vec<char>>>();
+    let start = lines_iter
+        .next()
+        .unwrap()
+        .chars()
+        .position(|c| c == 'S')
+        .unwrap();
 
-    let start = grid[0].iter().position(|c| *c == 'S').unwrap();
+    let lines_iter = lines_iter
+        .filter(|line| line.contains('^'))
+        .collect::<Vec<&str>>();
 
     let mut beams: HashMap<usize, usize> = HashMap::from([(start, 1)]);
 
-    for line in grid.iter() {
+    for line in lines_iter.iter() {
         let mut new_positions = HashMap::<usize, usize>::new();
 
         for (index, count) in beams.iter() {
             let index = *index;
             let count = *count;
-            if line.get(index).unwrap() == &'^' {
+            if line.as_bytes()[index] == b'^' {
                 new_positions
                     .entry(index - 1)
                     .and_modify(|val| *val += count)
@@ -88,7 +93,6 @@ fn part_two(path: &str) -> Result<String> {
                     .or_insert(count);
             }
         }
-
         beams = new_positions;
     }
 
