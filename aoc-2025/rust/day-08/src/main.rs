@@ -6,28 +6,6 @@ use std::{
     time::Instant,
 };
 
-// struct Circuit {
-//     connected_pairs: Vec<(I64Vec3, I64Vec3)>,
-//     junction_boxes: HashSet<I64Vec3>,
-// }
-
-// impl Circuit {
-//     fn new(p1: I64Vec3, p2: I64Vec3) -> Self {
-//         let connected_pairs = vec![(p1, p2)];
-//         let junction_boxes = HashSet::from([p1, p2]);
-
-//         Self {
-//             connected_pairs,
-//             junction_boxes,
-//         }
-//     }
-
-//     fn add_junction_box(&mut self, existing: I64Vec3, new: I64Vec3) {
-//         self.connected_pairs.push((existing, new));
-//         self.junction_boxes.insert(new);
-//     }
-// }
-
 type Circuit = HashMap<I64Vec3, HashSet<I64Vec3>>;
 
 fn part_one(path: &str, n_iter: usize) -> Result<String> {
@@ -104,15 +82,85 @@ fn part_one(path: &str, n_iter: usize) -> Result<String> {
         }
     }
 
-    // dbg!(all_circuits.len());
-
     let mut circuit_lengths: Vec<usize> = all_circuits.iter().map(|v| v.keys().count()).collect();
     circuit_lengths.sort();
     let top_three: Vec<usize> = circuit_lengths.iter().rev().take(3).copied().collect();
 
     let result = top_three.iter().product::<usize>();
 
-    // dbg!(top_three, result);
+    Ok(result.to_string())
+}
+
+fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
+    let raw = fs::read_to_string(path)?;
+    let data: Vec<I64Vec3> = raw
+        .lines()
+        .map(|line| {
+            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
+            I64Vec3::from([coords[0], coords[1], coords[2]])
+        })
+        .collect();
+
+    // brute force should work
+    // will need some type of cache for distances
+    let mut cache: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
+
+    for i in 0..data.len() {
+        for j in (i + 1)..data.len() {
+            let dist = data[i].distance_squared(data[j]);
+            cache.push((dist, (data[i], data[j])));
+        }
+    }
+    // Sort by distance for easier lookup
+    cache.sort_by_key(|&(distance, _)| distance);
+    let cache_iter = cache.iter().take(n_iter);
+
+    let mut all_circuits: Vec<HashSet<I64Vec3>> = Vec::new();
+
+    // iterate n times
+    for (_, (p1, p2)) in cache_iter {
+        // for each pair
+        let mut pushed = false;
+        for circuit in all_circuits.iter_mut() {
+            if circuit.contains(p1) || circuit.contains(p2) {
+                circuit.insert(*p2);
+                circuit.insert(*p1);
+                pushed = true;
+            }
+        }
+
+        if !pushed {
+            let new_circuit: HashSet<I64Vec3> = HashSet::from([*p1, *p2]);
+            all_circuits.push(new_circuit);
+        }
+
+        // merge connected circuits together
+        let mut changed = true;
+
+        while changed {
+            changed = false;
+
+            'outer: for i in 0..all_circuits.len() {
+                for j in (i + 1)..all_circuits.len() {
+                    let has_overlap = !all_circuits[j].is_disjoint(&all_circuits[i]);
+
+                    if has_overlap {
+                        let circuit_j = all_circuits.remove(j);
+                        all_circuits[i].extend(circuit_j);
+
+                        changed = true;
+                        break 'outer;
+                    }
+                }
+            }
+        }
+    }
+
+    let mut circuit_lengths: Vec<usize> = all_circuits.iter().map(|v| v.len()).collect();
+    circuit_lengths.sort();
+    let top_three: Vec<usize> = circuit_lengths.iter().rev().take(3).copied().collect();
+
+    let result = top_three.iter().product::<usize>();
 
     Ok(result.to_string())
 }
@@ -214,6 +262,12 @@ fn main() -> Result<()> {
 
     let start = Instant::now();
     let p1 = part_one(file_path, n_iter)?;
+    let duration = start.elapsed();
+    println!("p1 solution: {p1} in {duration:?}");
+    // test: 40
+
+    let start = Instant::now();
+    let p1 = part_one_simpler(file_path, n_iter)?;
     let duration = start.elapsed();
     println!("p1 solution: {p1} in {duration:?}");
     // test: 40
