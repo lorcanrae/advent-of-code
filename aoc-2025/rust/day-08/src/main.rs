@@ -1,124 +1,31 @@
 use anyhow::{Result, bail};
-use glam::I64Vec3;
-use std::{
-    collections::{HashMap, HashSet},
-    fs,
-    time::Instant,
-};
-
-type Circuit = HashMap<I64Vec3, HashSet<I64Vec3>>;
+use glam::IVec3;
+use itertools::Itertools;
+use std::{collections::HashSet, fs, time::Instant};
 
 fn part_one(path: &str, n_iter: usize) -> Result<String> {
     let raw = fs::read_to_string(path)?;
-    let data: Vec<I64Vec3> = raw
+    let data: Vec<IVec3> = raw
         .lines()
         .map(|line| {
-            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
-            I64Vec3::from([coords[0], coords[1], coords[2]])
+            let coords: Vec<i32> = line.split(",").map(|v| v.parse().unwrap()).collect();
+            IVec3::from([coords[0], coords[1], coords[2]])
         })
         .collect();
 
-    // brute force should work
-    // will need some type of dist_pairs for distances
-    let mut cache: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
+    // calc distances between all points and order
+    let dist_pairs = data
+        .iter()
+        .tuple_combinations()
+        .map(|(a, b)| (a.as_vec3().distance(b.as_vec3()), a, b))
+        .sorted_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
-    for i in 0..data.len() {
-        for j in (i + 1)..data.len() {
-            let dist = data[i].distance_squared(data[j]);
-            cache.push((dist, (data[i], data[j])));
-        }
-    }
-    // Sort by distance for easier lookup
-    cache.sort_by_key(|&(distance, _)| distance);
-    let cache_iter = cache.iter().take(n_iter);
-
-    let mut all_circuits: Vec<Circuit> = Vec::new();
+    // hashset was a terrible choice
+    let mut all_circuits: Vec<HashSet<IVec3>> = Vec::new();
 
     // iterate n times
-    for (_, (p1, p2)) in cache_iter {
-        // for each pair
-        let mut pushed = false;
-        for circuit in all_circuits.iter_mut() {
-            if circuit.contains_key(p1) || circuit.contains_key(p2) {
-                circuit.entry(*p1).or_insert_with(HashSet::new).insert(*p2);
-                circuit.entry(*p2).or_insert_with(HashSet::new).insert(*p1);
-                pushed = true;
-            }
-        }
-
-        if !pushed {
-            let mut new_circuit: Circuit = HashMap::new();
-            new_circuit.entry(*p1).or_default().insert(*p2);
-            new_circuit.entry(*p2).or_default().insert(*p1);
-            all_circuits.push(new_circuit);
-        }
-
-        // merge connected circuits together
-        let mut changed = true;
-
-        while changed {
-            changed = false;
-
-            'outer: for i in 0..all_circuits.len() {
-                for j in (i + 1)..all_circuits.len() {
-                    let has_overlap = all_circuits[i]
-                        .keys()
-                        .any(|key| all_circuits[j].contains_key(key));
-
-                    if has_overlap {
-                        let circuit_j = all_circuits.remove(j);
-
-                        for (point, connections) in circuit_j {
-                            all_circuits[i]
-                                .entry(point)
-                                .or_default()
-                                .extend(connections);
-                        }
-                        changed = true;
-                        break 'outer;
-                    }
-                }
-            }
-        }
-    }
-
-    let mut circuit_lengths: Vec<usize> = all_circuits.iter().map(|v| v.keys().count()).collect();
-    circuit_lengths.sort();
-    let top_three: Vec<usize> = circuit_lengths.iter().rev().take(3).copied().collect();
-
-    let result = top_three.iter().product::<usize>();
-
-    Ok(result.to_string())
-}
-
-fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
-    let raw = fs::read_to_string(path)?;
-    let data: Vec<I64Vec3> = raw
-        .lines()
-        .map(|line| {
-            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
-            I64Vec3::from([coords[0], coords[1], coords[2]])
-        })
-        .collect();
-
-    // Calculate distances between pairs
-    let mut dist_pairs: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
-    for i in 0..data.len() {
-        for j in (i + 1)..data.len() {
-            let dist = data[i].distance_squared(data[j]);
-            dist_pairs.push((dist, (data[i], data[j])));
-        }
-    }
-
-    // Sort by distance for easier lookup
-    dist_pairs.sort_by_key(|&(distance, _)| distance);
-    let dist_pairs_iter = dist_pairs.iter().take(n_iter);
-
-    let mut all_circuits: Vec<HashSet<I64Vec3>> = Vec::new();
-
-    // iterate n times
-    for (_, (p1, p2)) in dist_pairs_iter {
-        // for each pair
+    for (_, p1, p2) in dist_pairs.take(n_iter) {
+        // see if a point belongs to a circuit
         let mut pushed = false;
         for circuit in all_circuits.iter_mut() {
             if circuit.contains(p1) || circuit.contains(p2) {
@@ -127,9 +34,9 @@ fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
                 pushed = true;
             }
         }
-
+        // other wise create new circuit
         if !pushed {
-            let new_circuit: HashSet<I64Vec3> = HashSet::from([*p1, *p2]);
+            let new_circuit: HashSet<IVec3> = HashSet::from([*p1, *p2]);
             all_circuits.push(new_circuit);
         }
 
@@ -162,31 +69,25 @@ fn part_one_simpler(path: &str, n_iter: usize) -> Result<String> {
 
 fn part_two(path: &str) -> Result<String> {
     let raw = fs::read_to_string(path)?;
-    let data: Vec<I64Vec3> = raw
+    let data: Vec<IVec3> = raw
         .lines()
         .map(|line| {
-            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
-            I64Vec3::from([coords[0], coords[1], coords[2]])
+            let coords: Vec<i32> = line.split(",").map(|v| v.parse().unwrap()).collect();
+            IVec3::from([coords[0], coords[1], coords[2]])
         })
         .collect();
 
-    // brute force should work
     // calc distances and order
-    let mut dist_pairs: Vec<(i64, (I64Vec3, I64Vec3))> = Vec::new();
+    let dist_pairs = data
+        .iter()
+        .tuple_combinations()
+        .map(|(a, b)| (a.as_vec3().distance(b.as_vec3()), a, b))
+        .sorted_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
-    for i in 0..data.len() {
-        for j in (i + 1)..data.len() {
-            let dist = data[i].distance_squared(data[j]);
-            dist_pairs.push((dist, (data[i], data[j])));
-        }
-    }
-    // Sort by distance for easier lookup
-    dist_pairs.sort_by_key(|&(distance, _)| distance);
+    let mut all_circuits: Vec<HashSet<IVec3>> = Vec::new();
 
-    let mut all_circuits: Vec<HashSet<I64Vec3>> = Vec::new();
-    // iterate all the times
-    for (_, (p1, p2)) in dist_pairs.iter() {
-        // for each pair
+    // iterate over every pair
+    for (_, p1, p2) in dist_pairs {
         // check to see if a point already belongs to a circuit
         let mut pushed = false;
         for circuit in all_circuits.iter_mut() {
@@ -196,9 +97,8 @@ fn part_two(path: &str) -> Result<String> {
                 pushed = true;
             }
         }
-
         if !pushed {
-            let new_circuit: HashSet<I64Vec3> = HashSet::from([*p1, *p2]);
+            let new_circuit: HashSet<IVec3> = HashSet::from([*p1, *p2]);
             all_circuits.push(new_circuit);
         }
 
@@ -221,6 +121,7 @@ fn part_two(path: &str) -> Result<String> {
             }
         }
 
+        // break when there is one circuit of length input junction boxes
         if all_circuits.len() == 1 && all_circuits[0].len() == data.len() {
             return Ok((p1.x * p2.x).to_string());
         }
@@ -239,12 +140,6 @@ fn main() -> Result<()> {
 
     let start = Instant::now();
     let p1 = part_one(file_path, n_iter)?;
-    let duration = start.elapsed();
-    println!("p1 solution: {p1} in {duration:?}");
-    // test: 40
-
-    let start = Instant::now();
-    let p1 = part_one_simpler(file_path, n_iter)?;
     let duration = start.elapsed();
     println!("p1 solution: {p1} in {duration:?}");
     // test: 40
