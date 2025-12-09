@@ -5,24 +5,24 @@ use std::{
 };
 
 use anyhow::Result;
-use glam::{I64Vec2, IVec2};
+use glam::IVec2;
 use itertools::Itertools;
 
 fn part_one(path: &str) -> Result<String> {
     let raw = fs::read_to_string(path)?;
 
-    let points: Vec<I64Vec2> = raw
+    let points: Vec<IVec2> = raw
         .lines()
         .map(|line| {
-            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
-            I64Vec2::from([coords[0], coords[1]])
+            let coords: Vec<i32> = line.split(",").map(|v| v.parse().unwrap()).collect();
+            IVec2::from([coords[0], coords[1]])
         })
         .collect();
 
     let result: i64 = points
         .iter()
         .tuple_combinations()
-        .map(|(a, b)| ((b.x - a.x).abs() + 1) * ((b.y - a.y).abs() + 1))
+        .map(|(a, b)| ((b.x - a.x).abs() + 1) as i64 * ((b.y - a.y).abs() + 1) as i64)
         .max()
         .unwrap();
 
@@ -35,7 +35,7 @@ fn part_two(path: &str) -> Result<String> {
     let points: Vec<IVec2> = raw
         .lines()
         .map(|line| {
-            let coords: Vec<i64> = line.split(",").map(|v| v.parse().unwrap()).collect();
+            let coords: Vec<i32> = line.split(",").map(|v| v.parse().unwrap()).collect();
             IVec2::from([coords[0], coords[1]])
         })
         .collect();
@@ -52,7 +52,6 @@ fn part_two(path: &str) -> Result<String> {
             )
         },
     );
-    // dbg!(x_max, x_min, y_max, y_min);
 
     println!("Calculating Boundaries");
     // determine boundaries
@@ -86,62 +85,50 @@ fn part_two(path: &str) -> Result<String> {
     }
 
     println!("Flood fill");
-    // very naive external flood fill
     let mut exterior: HashSet<IVec2> = HashSet::new();
     let mut queue: VecDeque<IVec2> = VecDeque::new();
 
-    queue.push_back(IVec2::ZERO);
-    exterior.insert(IVec2::ZERO);
+    let start = IVec2::from([x_min - 1, y_min - 1]);
+    queue.push_back(start);
+    exterior.insert(start);
+
+    let estimated_size = ((x_max - x_min + 3) * (y_max - y_min + 3)) as usize;
+    exterior.reserve(estimated_size / 2);
+
+    const DIRS: [(i32, i32); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
 
     while let Some(p) = queue.pop_front() {
-        for (dx, dy) in [(0, 1), (0, -1), (1, 0), (-1, 0)] {
+        for (dx, dy) in &DIRS {
             let np = IVec2::from([p.x + dx, p.y + dy]);
 
-            if np.x < 0 || np.y < 0 || np.x > x_max + 1 || np.y > y_max + 1 {
+            if np.x < x_min - 1 || np.y < y_min - 1 || np.x > x_max + 1 || np.y > y_max + 1 {
                 continue;
             }
 
-            if boundary.contains(&np) || exterior.contains(&np) {
-                continue;
-            }
-
-            exterior.insert(np);
-            queue.push_back(np);
-        }
-    }
-
-    println!("Building grid");
-    let mut grid: Vec<Vec<u8>> = vec![vec![0; (x_max + 2) as usize]; (y_max + 2) as usize];
-
-    println!("Filling grid");
-    for y in 0..(y_max + 2) {
-        for x in 0..(x_max + 2) {
-            if exterior.contains(&IVec2::from([x, y])) {
-                grid[y as usize][x as usize] = 1;
+            if !boundary.contains(&np) && exterior.insert(np) {
+                queue.push_back(np);
             }
         }
-    }
-
-    // dbg!(&grid.len(), &grid[0].len());
-    for line in &grid {
-        println!("{line:?}");
     }
 
     println!("Calculating pairs");
-    let result: i32 = points
+    let result: i64 = points
         .iter()
         .tuple_combinations()
         .filter(|(a, b)| {
             // filter combinations that don't fall inside the grid
-            let (x_min, x_max) = (a.x.min(b.x) as usize, a.x.max(b.x) as usize);
-            let (y_min, y_max) = (a.y.min(b.y) as usize, a.y.max(b.y) as usize);
-            grid[y_min..y_max]
-                .iter()
-                .flat_map(|row| row[x_min..x_max].to_vec())
-                .sum::<u8>()
-                == 0
+            let (x_min, x_max) = (a.x.min(b.x), a.x.max(b.x));
+            let (y_min, y_max) = (a.y.min(b.y), a.y.max(b.y));
+            for y in y_min..=y_max {
+                for x in x_min..=x_max {
+                    if exterior.contains(&IVec2 { x, y }) {
+                        return false;
+                    }
+                }
+            }
+            true
         })
-        .map(|(a, b)| ((b.x - a.x).abs() + 1) * ((b.y - a.y).abs() + 1))
+        .map(|(a, b)| ((b.x - a.x).abs() + 1) as i64 * ((b.y - a.y).abs() + 1) as i64)
         .max()
         .unwrap();
 
@@ -149,7 +136,7 @@ fn part_two(path: &str) -> Result<String> {
 }
 
 fn main() -> Result<()> {
-    let file_path = "inputs/test.txt";
+    let file_path = "inputs/input.txt";
 
     let start = Instant::now();
     let p1 = part_one(file_path)?;
@@ -162,7 +149,7 @@ fn main() -> Result<()> {
     let p2 = part_two(file_path)?;
     let duration = start.elapsed();
     println!("p2 solution: {p2} in {duration:?}"); // 204.422µs
-    // test:
+    // test: 24
 
     Ok(())
 }
