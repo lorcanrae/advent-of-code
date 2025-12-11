@@ -28,6 +28,7 @@ fn part_one(input: &str) -> Result<String> {
 }
 
 // This is weak and I'm totally fine with it
+// Fully understand this could be done with DP
 fn part_two(input: &str) -> Result<String> {
     let mut devices = parse(input)?;
     devices.insert("out", vec![]);
@@ -62,12 +63,12 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let p1 = part_one(data)?;
     let duration = start.elapsed();
-    println!("p1 solution: {p1} in {duration:?}"); // 321.311µs
+    println!("p1 solution: {p1} in {duration:?}"); // 116.967µs
 
     let start = Instant::now();
     let p2 = part_two(data)?;
     let duration = start.elapsed();
-    println!("p2 solution: {p2} in {duration:?}");
+    println!("p2 solution: {p2} in {duration:?}"); // 256.788µs
 
     Ok(())
 }
